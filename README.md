@@ -30,7 +30,7 @@ claude
 ## v1 구조도 — 이렇게 써요
 
 ```mermaid
-flowchart LR
+flowchart TB
   A["① 내려받기"] --> B["② 프롬프트 A<br/>「나를 인터뷰해 줘」<br/>질문 7개, 고르기만"]
   B --> C["policy/answers.md<br/>내 답변 정책 문서<br/>+ 새면 안 되는 말 목록"]
   C --> D["③ 프롬프트 B<br/>첫 프롬프트 한 장<br/>상황 · 할 일 · 의도 · 걱정"]
