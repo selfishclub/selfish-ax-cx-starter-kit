@@ -3,7 +3,7 @@
 > **카카오 채널 문의를 AI가 초안 쓰고, 사람은 마지막 버튼만 누르는 CX 워크플로우** — 설계도 · 규칙 · 시작 프롬프트
 >
 > 셀피쉬클럽(회원 1.2만 명 커뮤니티)이 실제로 돌리는 워크플로우를, 여러분 채널에 맞게 다시 만들 수 있게 묶었어요.
-> 2026-11-07 AX 살롱 VOL.01 발표에서 공개한 **v1**이에요. v2(실제 코드)는 올라오면 이 아래에 더해요.
+> 2026-11-07 AX 살롱 VOL.01 발표에서 **v1**을 공개했고, 11/9에 **v2(실제 코드)**까지 올렸어요. 투표는 2등이었지만 약속대로 전부 열어요.
 
 ---
 
@@ -14,6 +14,7 @@ Claude Code(또는 Codex)를 켜고 이렇게 말해요.
 > **https://github.com/selfishclub/selfish-ax-cx-starter-kit 이거 내려받아 줘**
 
 그게 다예요. 내려받아지면 이어서 **「START_HERE.md 읽고 프롬프트 A부터 시작하자」** 라고 하면 돼요.
+코드까지 바로 돌려 보려면 **「pipeline/README.md 읽고 샘플 한 바퀴 돌리자」**.
 
 <details>
 <summary>직접 받고 싶으면 (터미널)</summary>
@@ -53,6 +54,31 @@ flowchart TB
 
 ---
 
+## v2 구조도 — 코드가 이렇게 돌아요
+
+`pipeline/` 안의 파일이 그대로 아홉 칸이에요. 바꿔 끼울 곳은 둘(읽기 · 보내기)뿐이에요.
+
+```mermaid
+flowchart TB
+  A["run.js<br/>5분마다 한 바퀴"] --> B["src/sources/kakao.js<br/>관리자 화면 읽기 · 안 읽은 방만<br/>(Playwright → ego lite · Aside로 바꿔도 됨)"]
+  B --> C["src/mask.js<br/>이름 · 번호 · 이메일 · 금액 가리기"]
+  C --> D["src/draft.js<br/>policy/answers.md 근거로 초안<br/>근거 없으면 「확인 필요」 · 새는 말 검사"]
+  D --> E["src/slack.js<br/>카드 한 장 + 버튼 셋"]
+  E --> F["사람<br/>이대로 · 고쳐서 · 건너뛰기"]
+  F --> G["kakao.js send()<br/>승인한 글 그대로 입력 · CX_SEND_ENABLED 스위치"]
+  H["briefing.mjs 매일 9시 · learn.mjs 일요일 22시<br/>launchd/ 가 맥에서 돌림"] -.기록만 읽어요.-> A
+```
+
+| 받으면 | 명령 | 걸리는 시간 |
+|---|---|---|
+| 정책 → 초안 한 바퀴 (슬랙 · 카카오 없이) | `cd pipeline && npm install && npm run check` | 5분 |
+| 가짜 문의 → 슬랙 카드까지 | `.env.local`에 슬랙 값 넣고 `npm run cx:sample` | 10분 |
+| 내 카카오 채널 붙이기 | `npm run login` → `npm run cx` | 10분 |
+
+자세한 건 [`pipeline/README.md`](pipeline/README.md). 셀피쉬클럽 운영 코드에서 **걷어낸 것**(정책 원문 · 내부 도구 목록 · 채널 ID · 운영자 이름 · 마이페이지 챗봇 조각)도 거기 적어 뒀어요.
+
+---
+
 ## 셀피쉬클럽 · 젬마
 
 | | 링크 | 뭐가 있나 |
@@ -71,19 +97,19 @@ flowchart TB
 | **특징** | 코드가 아니라 **정책 문서가 먼저**예요. 「무엇을 보고 답하고, 무슨 말을 하면 안 되고, 언제 사람에게 넘기는지」를 인터뷰로 먼저 정하고, 그다음에 수집기를 짜게 해요. AI는 근거 없으면 지어내지 않고 「확인 필요」로 넘기고, 이름 · 번호는 AI가 보기 전에 가리고, 발송은 사람이 버튼을 눌러야만 나가요. |
 | **이런 분께** | 혼자 · 작은 팀으로 커뮤니티나 가게를 운영하면서 **같은 문의에 매일 답하는 분** / AI는 쓰는데 **일에 붙이긴 막막한 분** / AI가 사고 칠까 봐 **맡기기 겁나는 분** / 개발은 몰라도 Claude Code로 뭔가 만들어 보고 싶은 분 |
 | **필요한 것** | Claude Code(또는 Codex) · 문의가 들어오는 채널 하나(카카오 채널 · 채널톡 · 인스타 DM · 이메일 …) · 카드를 받을 메신저 하나(슬랙 · 디스코드 · 텔레그램) · 이미 보낸 답 몇 개 |
-| **받는 것 (v1)** | ① 우리가 어떻게 만들었는지 **설계도**(`docs/`) ② 뭘 절대 AI에 안 맡겼는지 **규칙**(`policy/`, `docs/05`) ③ Claude Code에 붙여 넣는 **시작 프롬프트 3개**(`START_HERE.md`) ④ 나를 인터뷰해서 정책 문서를 써 주는 **스킬 4개**(`.claude/skills/`) ⑤ 우리가 겪은 **실패 목록**(`docs/03`) |
-| **하지 않는 것** | 키트는 **발송 버튼을 대신 누르지 않아요.** 환불 · 결제 · 개인정보 문의는 사람에게 넘기게 돼 있어요. 비밀번호 · 키 값은 채팅에 붙여 넣지 말고 `.env.local`에 직접 넣어요. v1에는 돌아가는 코드가 없어요(아래 v1/v2). |
+| **받는 것** | ① 우리가 어떻게 만들었는지 **설계도**(`docs/`) ② 뭘 절대 AI에 안 맡겼는지 **규칙**(`policy/`, `docs/05`) ③ Claude Code에 붙여 넣는 **시작 프롬프트 3개**(`START_HERE.md`) ④ 나를 인터뷰해서 정책 문서를 써 주는 **스킬 4개**(`.claude/skills/`) ⑤ 우리가 겪은 **실패 목록**(`docs/03`) ⑥ 셀피쉬클럽이 실제로 돌리는 **코드 그대로**(`pipeline/`) |
+| **하지 않는 것** | 키트는 **발송 버튼을 대신 누르지 않아요.** 환불 · 결제 · 개인정보 문의는 사람에게 넘기게 돼 있어요. 비밀번호 · 키 값은 채팅에 붙여 넣지 말고 `.env.local`에 직접 넣어요. 코드(`pipeline/`)는 읽기 전용 · 발송 꺼짐으로 시작해요. |
 
 ---
 
 ## v1 / v2
 
-| | **v1 — 지금, 모두에게** | **v2 — AX 살롱에서 1등 하면** |
+| | **v1 — 설계도와 규칙** | **v2 — 실제 코드 (11/9 공개)** |
 |---|---|---|
 | 무엇 | 설계도 · 규칙 · 시작 프롬프트 · 인터뷰 스킬 · 실패 목록 | 셀피쉬클럽이 **실제로 돌리는 코드**를 개인정보 · 비밀값 걷어내고 그대로 |
 | 받으면 | 내 답변 정책 문서가 생기고, 내 채널에 맞는 수집기를 Claude Code가 짜게 할 수 있어요 | `--sample`로 카카오 없이 가짜 문의 1건 → 초안 → 슬랙 카드까지 10분 안에 |
 | 들어 있는 것 | `README` `START_HERE` `docs/` `policy/` `.claude/skills/` `examples/` | `pipeline/` — 카카오 읽기 → 가림 → 맥락 요약 → 초안 → 슬랙 카드 → 발송 · 아침 브리핑 · 일요일 학습 · 맥 자동 시작 · 대시보드 |
-| 어디 | 이 저장소 | [`pipeline/README.md`](pipeline/README.md) 자리 — 올라오면 구조도도 여기 더해요 |
+| 어디 | 이 저장소 | [`pipeline/`](pipeline/) · [`pipeline/README.md`](pipeline/README.md) |
 
 ---
 
@@ -98,9 +124,9 @@ flowchart TB
 | [`docs/04_다른_채널_다른_도구.md`](docs/04_다른_채널_다른_도구.md) | 이메일 · 채널톡 · 인스타 DM · 톡톡 / 텔레그램 · 디스코드 / Aside · ego lite |
 | [`docs/05_넘지_않는_선.md`](docs/05_넘지_않는_선.md) | 발송 · 배포 · 돈 · 개인정보 — 말로 「하지 마」가 아니라 버튼 없으면 안 나가게 |
 | [`.claude/skills/`](.claude/skills/) | `cx-interview`(나를 인터뷰) · `cx-policy-from-history`(보낸 답에서 표준 답 뽑기) · `cx-sync`(화면 바뀌면 정책 맞추기) · `cx-weekly-learn`(주 1회 수정안 PR) |
-| [`policy/`](policy/) | `answers.template.md`(정책 문서 틀) · `leak-words.example.json`(새면 안 되는 말) |
+| [`policy/`](policy/) | `answers.template.md`(정책 문서 틀) · `answers.sample.md`(가상 커뮤니티 샘플 — v2 시험용) · `leak-words.example.json`(새면 안 되는 말) |
 | [`examples/`](examples/) | 셀피쉬클럽 정책 발췌 · 슬랙 카드 구성 · 자영업자 사례 「리뷰 원터치」 |
-| [`pipeline/`](pipeline/) | v2 자리 |
+| [`pipeline/`](pipeline/) | **v2 실제 코드** — `run.js` · `src/` · `tools/` · `briefing.mjs` · `learn.mjs` · `launchd/` · `filters.json`. 받으면 `npm run check` |
 | [`.env.example`](.env.example) | 값 없이 이름만. 실제 값은 `.env.local`에 |
 
 ---

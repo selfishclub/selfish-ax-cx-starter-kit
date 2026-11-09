@@ -1,0 +1,32 @@
+{
+  "name": "selfish-ax-cx-pipeline",
+  "version": "2.0.0",
+  "private": true,
+  "description": "카카오 채널 문의 → 가리기 → 맥락 읽기 → AI 초안 → 슬랙 카드 → 사람이 버튼 → 발송. 셀피쉬클럽 CX 스타터 키트 v2",
+  "license": "SEE LICENSE IN ../LICENSE",
+  "scripts": {
+    "login": "node login.js",
+    "cx": "node run.js",
+    "cx:watch": "node run.js --watch",
+    "cx:sample": "node run.js --sample",
+    "cx:show": "node run.js --show",
+    "briefing": "node briefing.mjs --dry",
+    "briefing:post": "node briefing.mjs",
+    "learn": "node learn.mjs --dry",
+    "learn:pr": "node learn.mjs",
+    "history": "node tools/extract-history.js",
+    "history:summary": "node tools/summarize-history.js",
+    "check": "node tools/check.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "@slack/bolt": "^4.2.0",
+    "playwright": "^1.52.0"
+  },
+  "optionalDependencies": {
+    "@supabase/supabase-js": "^2.49.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
