@@ -3,7 +3,6 @@
 > 배민 AI 장사사관학교 실전 캠프에서 부찌대학 사장님이 만든 도구예요. 배민 · 쿠팡이츠 · 네이버 리뷰를 한곳에 모으고, 답글 초안을 사장님 말투로 써 둬요.
 
 - 스타터 키트(공개): https://github.com/selfishclub/review-onetouch-starter
-- 캠프 저장소(사장님 12명): https://github.com/selfishclub/baemin-ops-os-camp
 
 ## 한 줄로
 
